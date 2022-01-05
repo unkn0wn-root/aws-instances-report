@@ -1,0 +1,7 @@
+csv/
+logs/
+__pycache__/
+.pytest_cache/
+.env
+*.so
+*.pyc
