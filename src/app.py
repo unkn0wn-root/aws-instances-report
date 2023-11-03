@@ -29,53 +29,44 @@ info_logger = log.setup_logger('main_info_log')
 def ec2_task() -> dict:
     info_logger.info("Running EC2 task now...")
 
-    try:
-        '''
-        Connect using session module defined in aws_session.py which throws if something goes wrong
-        then get instances types and count each element in list.
-        @returns dict
-        '''
-        current_ec2_session = aws_session()
-        ec2_session = current_ec2_session.resource('ec2')
-        # store instances types here
-        ec2_types_list = [ec2_instance.instance_type for ec2_instance in ec2_session.instances.all()]
-        ec2_types_count = dict(Counter(ec2_types_list))
+    '''
+    Connect using session module defined in aws_session.py which throws if something goes wrong
+    then get instances types and count each element in list.
+    @returns dict
+    '''
+    current_ec2_session = aws_session()
+    ec2_session = current_ec2_session.resource('ec2')
+    # store instances types here
+    ec2_types_list = [ec2_instance.instance_type for ec2_instance in ec2_session.instances.all()]
+    ec2_types_count = dict(Counter(ec2_types_list))
 
-        tab = PrettyTable(['Source', 'Type', 'Count'])
-        for key, value in ec2_types_count.items():
-            tab.add_row(['ec2', key, value])
-        print(tab)
-        
-        return ec2_types_count
-    except Exception as error:
-        err_logger.error(error)
-        raise error
+    tab = PrettyTable(['Source', 'Type', 'Count'])
+    for key, value in ec2_types_count.items():
+        tab.add_row(['ec2', key, value])
+    print(tab)
+
+    return ec2_types_count
 
 def rds_task() -> dict:
     info_logger.info("Running AWS RDS task now...")
 
-    try:
-        current_rds_session = aws_session()
-        rds_session = current_rds_session.client('rds')
-        # store rds instances types
-        rds_types_list = [rds_instance['DBInstanceClass'] for rds_instance in rds_session.describe_db_instances()['DBInstances']]
-        rds_types_count = dict(Counter(rds_types_list))
+    current_rds_session = aws_session()
+    rds_session = current_rds_session.client('rds')
+    # store rds instances types
+    rds_types_list = [rds_instance['DBInstanceClass'] for rds_instance in rds_session.describe_db_instances()['DBInstances']]
+    rds_types_count = dict(Counter(rds_types_list))
 
-        tab = PrettyTable(['Source', 'Type', 'Count'])
-        for key, value in rds_types_count.items():
-            tab.add_row(['rds', key, value])
-        print(tab)
+    tab = PrettyTable(['Source', 'Type', 'Count'])
+    for key, value in rds_types_count.items():
+        tab.add_row(['rds', key, value])
+    print(tab)
 
-        return rds_types_count
-    except Exception as error:
-        err_logger.error(error)
-        raise error
-
+    return rds_types_count
 
 if __name__ == '__main__':
     import sys
     sys.path.append('src')
-    
+
     import csv
 
     from s3 import s3_upload
@@ -116,8 +107,8 @@ if __name__ == '__main__':
             upload_to_s3 = s3_upload(csv_file, AWS_S3_BUCKET, csv_file_name)
         except Exception as s3_error:
             err_logger.error(f"Something went wront with upload to S3! {s3_error}")
-    except IOError as io_error:
+    except IOError:
         err_logger.error('File not found or could not be opened')
     except Exception as error:
         err_logger.error(error)
-        
+
